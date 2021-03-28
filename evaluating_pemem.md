@@ -125,7 +125,50 @@ PM的使用给数据持久性、内存管理和并发性带来了新的挑战。
 #### 3.4 Fingerprinting Persistent Tree (FPTree)     
 
 
-### 
+###  5.EXPERIMENTAL EVALUATION
+
+* HardWare *
+- Intel Xeon Platinum 8260L CPU
+- 1.5 TB of Optane DC PM (6 × 256 GB DCPMMs) 
+- 96 GB of DRAM (6 × 16 GB DIMMs)
+- The CPU has 24 cores (48 hyperthreads)
+- 36 MB of L3 cache, and is clocked at 2.40 GHz.
+
+#### 5.2 Index Implementations
+
 
 #### 5.4 Single-threaded Performance
+
+* Lookup
+- Fig (7a , 8a)
+    - Inner Node 放置在DRAM的数据结构(FpTree, NvTree比完全基于PM的数据结构有更高的**** 吞吐***
+    - Fptree 的指纹进一步减少*** cacheline access ***
+        - finger prints & bimap
+        - 可能命中的数据
+    - NVTree Append only, 需要扫描平均一半的entries
+    - BzTree Hybrid, 如果在sorted 区域未找到，需要扫描未排序区域
+
+- Fig (9a, 10a)
+    - NvTree比FpTree更多的PMRead, 更多的L3 cache miss 
+- Device R/W（介质访问), PM R/W (memory controller)
+    - best case: App 重逢利用DCPMM buffer, Device R/W 跟 PM R/W 相同。 
+    - worst case : Device  R/W 是 PM R/W的4倍；
+    - 因为256byte(PM Block) 只有64byte(cacheline)被使用。
+
+- Fig (10a)
+    - BzTree 更少的cache miss，原因是small page(1Kb), 8byte Key, 实现采用来linear search, 
+      相比binary search对cache 更友好。
+    - BwTree 使用binary search, cache miss(higher latency of PM)导致其没有更好的查询性能（吞吐）
+    
+
+
+#### 5.5 Multi-threaded Performance
+我们将wBTree的单线程性能作为参考，因为它不支持并发。
+在所有实验中，
+1.首先加载具有1亿个键值对（8字节键，8字节值）的树，
+2.然后测量运行阶段，由工作线程分摊执行1亿个KV操作。
+由于PiBench专门使用一个线程来收集统计数据，因此我们将工作线程的数量缩放到23个，并使用32个和47个线程进行测试，以显示树在超线程下的行为。
+
+
+
 
