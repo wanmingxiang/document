@@ -1,4 +1,9 @@
 # Evaluating Persistent Memory Range Indexes
+
+### ABSTRACT
+    - PM因为其持久性、低延时、等特点从根本上改变了索引等构建方式
+    - 之前的研究工作缺乏真实PM硬件，都是基于DRAM模拟仿真
+
 ### 1. INTRODUCTION
 PM 有跟DRAM和Flash截然不同的特性
 * 比Flash有更高的耐久性（endurance）
@@ -138,7 +143,6 @@ PM的使用给数据持久性、内存管理和并发性带来了新的挑战。
 
 
 #### 5.4 Single-threaded Performance
-
 * Lookup
 - Fig (7a , 8a)
     - Inner Node 放置在DRAM的数据结构(FpTree, NvTree比完全基于PM的数据结构有更高的**** 吞吐***
@@ -159,9 +163,43 @@ PM的使用给数据持久性、内存管理和并发性带来了新的挑战。
     - BzTree 更少的cache miss，原因是small page(1Kb), 8byte Key, 实现采用来linear search, 
       相比binary search对cache 更友好。
     - BwTree 使用binary search, cache miss(higher latency of PM)导致其没有更好的查询性能（吞吐）
+
+* Insert
+
+    - 全部强一致性;
+    - Insert, Update, Delete 都必须CLWB 强制刷新CPU cache, CPU Cache 无法隐藏PM Write都高时延
+    - 标准差很大（memory controller， DCPMM)
+    - 影响写性能都点包括：
+        - Flush 次数
+        - 每次插入所需要都维护操作
+        - 节点分裂
+    - FPTree ( , bitmap, fingerprint)   
+    - wBTree ( , bitmap, slotArray, validity bit)
+    - NVTree ( , counter)
+    - BzTree ( , 2 PMwCAS) 
     
+    - Bz Fp wB 都节点分裂可能传导到Root节点, NVTree 都分裂需要整个内部节点都重建。(PM Write) 
 
+* Update
+    - 更新只操作已经存在都Key，不涉及内存申请和节点分裂（7c可以看出标准差低于写）； 
+    - NVTree 的更新比插入慢（先删后增） [对应9c的PM Write]
+    - WbTree 的更新比插入快（更少的flush次数）[少一次validity bit]
+    - BzTree 也是比写没有PM Alloc， Node Split；
+    
+* Delete 
+    - wB | FP 更查询的性能接近 (Looup flowed by a bit op)
+    - NV 
+    - Bz PMwCAS会导致更多的flush
+    - 
+* Scan 
+  - from a start Key, read the flowwing records;
+  - 只有wBTree 可以顺序的访问，其他都需要额外的排序；
+  - 读更少的数据（如FP）不能补偿排序、过滤的开销；
 
+* Skew workloads
+    - insert/delete 针对相同Key， 只有第一个会成功（后续的相当于只有一次查询）[忽略]
+    - 单线程下并没有带来特别大的提升；
+    - 
 #### 5.5 Multi-threaded Performance
 我们将wBTree的单线程性能作为参考，因为它不支持并发。
 在所有实验中，
@@ -169,6 +207,24 @@ PM的使用给数据持久性、内存管理和并发性带来了新的挑战。
 2.然后测量运行阶段，由工作线程分摊执行1亿个KV操作。
 由于PiBench专门使用一个线程来收集统计数据，因此我们将工作线程的数量缩放到23个，并使用32个和47个线程进行测试，以显示树在超线程下的行为。
 
+* Uniform distribution
+    - 所有操作随着线程数的增加，都表现出更好都吞吐量；
+    - 在超线程下，FPTree 提升尤其明显；
+
+* Skew distribution
+    - 跟统一分布负载类似，随着线程增加都有比较高都吞吐；
+    - BzTree & FPTree的更新23线程后表现更糟糕；
+     
+* Skew factor  
+    - Lookup : lower contension 意味着访问更多的key(cache miss);
+    - NVTree 变化不大： 只读情况下也需要 Node Lock, 影响了并发扩展;
+    - Update 的趋势不太一样
+    - Skew workload下的性能影响因素：
+        - PM Access (单线程下主要因素）
+        - Contension level(多线程下的关键因素）
+        
+* Mixed workload 
+    
 
 
 
