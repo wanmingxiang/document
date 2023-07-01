@@ -1,0 +1,2912 @@
+- Good afternoon.
+
+Can everybody hear me okay?
+
+Thank you very much for joining today.
+
+Thank you for coming to the DC summit
+
+and taking time outta your schedule
+
+and spending Wednesday afternoon
+
+to talk about SageMaker Inference.
+
+I'm Aaron Sengstacken,
+
+I'm a machine learning
+solutions architect at AWS.
+
+I've been a solutions architect at AWS,
+
+supporting public sector customers
+
+for about two and a half years.
+
+Prior to coming to AWS,
+
+I was an aerospace
+engineer and spent 12 years
+
+both in robotic space,
+exploration and avionics
+
+for man and unmanned systems.
+
+But today we're gonna talk about SageMaker
+
+and we're gonna talk
+about SageMaker Inference.
+
+So one piece of the machine
+learning life cycle.
+
+In the last 12 months,
+
+we've doubled the number of options
+
+that we have for SageMaker Inference.
+
+And we'll talk about all those options.
+
+We'll compare and contrast
+what style is right for you.
+
+And we're gonna come back to today,
+
+really three areas, right?
+
+Cost, use case and constraints
+
+for each different inference
+style within SageMaker.
+
+How would you choose one over the other.
+
+Before we get into the deep
+dive of asynchronous inference
+
+versus synchronous inference,
+
+we're gonna ground
+ourselves in terminology
+
+and introduce what is SageMaker.
+
+There could be a number
+of you in the room here
+
+that this is the first time
+
+you're familiar with the service.
+
+We'll also talk about what is inference.
+
+This might be a new word to
+some, and where does it fit in,
+
+in the machine learning life cycle?
+
+We're then gonna go very deep
+
+into the different architectures
+for inference options.
+
+We'll provide some best practices
+
+at the end of the presentation,
+really cost optimization.
+
+How do we optimize our deployed
+machine learning models
+
+that are in production?
+
+And then I'll provide some
+resources on how to get started.
+
+We probably will have about 10 minutes
+
+at the end for questions.
+
+So I'll stick around for Q and A,
+
+if there's any questions
+that I can't answer,
+
+we wanna go even deeper.
+
+I'll be hanging out in
+the hallway afterwards,
+
+so we can talk one-on-one there as well.
+
+Let's dive in and get started.
+
+Okay, so what is Amazon SageMaker?
+
+SageMaker is a machine learning
+platform for data scientist,
+
+for machine learning engineers
+and for business analysts.
+
+It's a machine-learning platform
+
+that spans the entire life
+cycle of machine learning.
+
+This is from data labeling
+
+to deploying models in production,
+
+and it's a managed service.
+
+So what does that mean when
+we say a managed service?
+
+Many services are managed,
+SageMaker is managed.
+
+What does that mean?
+
+A managed service is one
+
+that's gonna provision
+infrastructure on your behalf, right?
+
+So now instead of your data science team
+
+deploying EC2 instances,
+
+we can configure our workloads
+
+and let's SageMaker manage that.
+
+We get to allow our
+machine learning engineers
+
+and data scientists to
+focus on data science
+
+and machine learning and not
+getting two EC2 instances
+
+to talk together and
+not on security groups
+
+for our EC2 instances,
+
+We let SageMaker manage
+that under the hood.
+
+We're gonna come back to that
+
+and we'll show how in the inference phase
+
+of machine learning,
+
+how that works and how the
+managed portion of SageMaker
+
+is happening under the hood.
+
+So I mentioned that
+SageMaker is a platform,
+
+it's also an integrated
+development environment.
+
+So you might have heard
+of SageMaker Studio.
+
+It's a web-based integrated
+development environment.
+
+It's Cloud-based.
+
+We have customers that onboard
+hundreds of data scientists
+
+to use SageMaker studio as their platform
+
+for machine learning.
+
+We also introduced SageMaker Studio Canvas
+
+in the re:Invent conference in 2021,
+
+and that's really for business analysts.
+
+So there was a great talk
+yesterday by Anastasia
+
+that showed how to build,
+
+train and deploy machine learning models
+
+with never writing a single line of code.
+
+Right?
+
+So if you have business
+analysts that are interested in,
+
+there's also SageMaker Canvas,
+
+and there's actually a fourth persona
+
+that we're not showing on this screen.
+
+And that's really students, students,
+
+and machine learning learners, right?
+
+People that are coming up to
+speed on machine learning.
+
+Perhaps SageMaker is a lot
+to handle to get started.
+
+Perhaps you don't have an AWS account
+
+and that's where SageMaker
+Studio Lab comes in.
+
+So SageMaker Studio Lab is a
+free offering, free storage,
+
+free compute, no AWS account required.
+
+If you have an email address,
+
+you can get an account
+
+and it's really intended
+for students and learners.
+
+So there's really a fourth persona up here
+
+with SageMaker Studio Labs.
+
+Okay, so let's talk about the life cycle
+
+of machine learning.
+
+This broadly falls into
+three to four categories,
+
+depending on how we look at it.
+
+Here I'm showing it in three categories,
+
+building, training and deployment phases.
+
+And I'm showing this as part of a circle.
+
+This is really a flywheel
+
+that we're gonna go through multiple times
+
+and you might not see this
+
+if we take a class in machine learning.
+
+We really focus in our
+education of machine learning
+
+on the data preparation,
+
+model training and model evaluation.
+
+There's so much focus on that.
+
+And there's very little focus
+
+on the deploying pieces to production.
+
+How do we let others use the model?
+
+So if we start at the build phase, right,
+
+I talk to lots of customers,
+they almost all have data.
+
+And we also live in a very unique time
+
+that open source data
+sets are available, right,
+
+to get started with machine learning,
+
+regardless of the problem
+that you're working on.
+
+So the first thing we might
+unite me to collect data.
+
+We might need fetch data.
+
+We might need to label
+data, especially if we want
+
+to use supervised machine
+learning techniques,
+
+where we need a predictive label, right?
+
+That could be a class
+that could be a number
+
+if we're gonna do a
+regression based problem.
+
+So we're gonna have to collect our data.
+
+And that's the first phase there.
+
+We're also gonna have to clean our data,
+
+clean and prepare our
+data for model training.
+
+So what does that mean to clean data?
+
+We might have to convert
+categorical variables
+
+into one hot and coded variables.
+
+We might have to deal with missing values.
+
+We might have to deal with timestamps
+
+or other feature engineering
+that we might wanna do,
+
+but ultimately, we're
+preparing our data sets
+
+to train a machine learning model,
+
+to train a predictive model.
+
+We're also in this phase of build,
+
+we're gonna be splitting our data sets
+
+and to train test validation.
+
+This could be cross-validation techniques.
+
+There's a number of techniques
+
+that we could use in this
+phase to prepare our data.
+
+Once we have a clean, prepared data set,
+
+we're now gonna move into the next phase,
+
+which is the training phase.
+
+This is where we're gonna train
+the machine learning models.
+
+We're gonna be optimizing the weights
+
+in the case of a neural network.
+
+We're gonna be using gradient dissent
+
+to optimize those weights.
+
+And we're also gonna
+be evaluating the model
+
+after we've trained it.
+
+How well does it perform
+on the holdout data set?
+
+This is bread and butter
+data science, right
+
+that we're gonna evaluate.
+
+It's also in this phase
+
+that we might perform hyper
+parameter optimization.
+
+If that's a new term to you,
+
+it means nothing else than
+just tweaking the knobs
+
+of an algorithm to get even
+more performance out of it
+
+that would occur in the train phase.
+
+The last phase here is deployment
+and monitoring our models.
+
+And that's where we're gonna
+spend most of our time today
+
+in today's talk of deploying
+a model to production
+
+and monitoring it once it's in production.
+
+And this is an area that's again,
+
+not discussed very often
+
+in academic coursework
+of machine learning.
+
+How do we deploy our models?
+
+And a lot of data
+scientists that I talk to,
+
+we've trained our models,
+we've deployed its production.
+
+Others can now use the model.
+
+Let's high five, we're done.
+
+But many communities,
+machine learning communities,
+
+the view is just the opposite.
+
+Your work has only begun at that stage.
+
+And it's very important that we monitor
+
+these machine learning
+models in production.
+
+We need to monitor them for drift.
+
+This could be model drift, data drift,
+
+right, where the underlying
+data changes, right?
+
+There's no better example
+of monitoring your models
+
+and data drift than the COVID pandemic.
+
+You can imagine if we trained
+a machine learning model
+
+for sales prediction on historical data
+
+from March, 2020 and before.
+
+So we trained our model.
+
+It worked perfect.
+
+We evaluated our model
+and the holdout data set.
+
+We deployed it, it's March,
+2020, well, April, 2020,
+
+that model is no longer valid.
+
+The world has changed.
+
+The data has changed, and
+what's really happening
+
+is it's the statistical
+distribution of the data
+
+that we trained on is now very different
+
+than the statistical
+distribution of the data
+
+that is coming into the model.
+
+The real world has changed, and
+we need to be aware of that.
+
+So monitoring our model, and
+if we can, collecting data,
+
+real world data that's
+coming into our model,
+
+that is gold.
+
+That completes the flywheel here
+
+because the new data is how
+the real world is behaving.
+
+If we can re-label that data,
+
+we're now going through this cycle again.
+
+Now we have version two of our model,
+
+version 10 of our model,
+version 100 of our model.
+
+And each time we go through the cycle,
+
+our model improves and it
+reflects the most recent data
+
+and the most recent
+interactions with our model.
+
+Again, I mentioned this already,
+
+but SageMaker supports
+this end-to-end life cycle.
+
+And you'll hear this term ML
+Ops, machine learning ops.
+
+What is that that's drawn on here?
+
+That really comes down to
+automation and reproducibility.
+
+So we can manually go through
+these steps of building,
+
+training, deploying, and
+monitoring and model,
+
+but how do we automate it?
+
+So I don't have to call
+my colleague to say
+
+the model's ready for deployment.
+
+We can automate it.
+
+We can have reproducibility
+
+where we're not only versioning our code,
+
+or versioning our data
+
+or versioning our configuration files.
+
+And it's a different way
+of thinking of DevOps
+
+for machine learning
+
+than what we might be
+traditionally used to.
+
+Okay.
+
+So let's focus now on the deployment side.
+
+I wanna train a model.
+
+Let's suppose here that I have a model
+
+that is used for fraud prediction.
+
+This is a global online retailer.
+
+There's purchases that come in,
+
+24 hours a day, seven days a week,
+
+and every purchase I need to run through
+
+a fraud prediction model,
+every single purchase.
+
+What sort of inference
+endpoint would I use for that?
+
+Well, the first one that
+we're gonna talk about
+
+is a real-time inference endpoint.
+
+And, oh, by the way, I think
+I might have skipped this,
+
+but that's term inference.
+
+If that's new to you, it's nothing more
+
+than machine learning
+speak for prediction.
+
+We're no longer training
+our machine learning model.
+
+We're using it, we're using it.
+
+We're letting others use it
+to get predictions, right?
+
+This is really the most important area
+
+of the machine learning life cycle,
+
+where we finally get to make predictions
+
+and find insights in our data.
+
+Okay, so back to the global retailer,
+
+we have this fraud prediction model.
+
+We could use a real-time
+inference endpoint.
+
+What in the heck is a
+real-time inference endpoint?
+
+A real-time endpoint within SageMaker
+
+is one that you can deploy
+
+that's gonna be up 24 hours a day,
+
+seven days a week, does not come offline.
+
+This is a low latency endpoint
+with very high throughput.
+
+And this is really great for customers
+
+that have 24 hours a day,
+
+seven days a week type
+usage pattern, right?
+
+We come back to this idea
+again, for every one of these,
+
+we're gonna think about cost,
+use case and constraints.
+
+And the cost on a real-time
+inference endpoint
+
+is the time in which the
+endpoint is deployed.
+
+So if I deploy an
+endpoint that's real-time
+
+and I never use it, I still pay for it.
+
+If I deploy an endpoint that's real-time
+
+and I use it a hundred times
+a second, I pay just the same.
+
+It's the wall time that
+this endpoint is active.
+
+So that's our cost on a
+real-time inference endpoint.
+
+What are the use cases again?
+
+High throughput, low
+latency type predictions.
+
+And ultimately we're deploying this model
+
+so others can use it.
+
+So our applications can use it, right?
+
+And we get a restful
+secure HTTPS endpoint.
+
+We're gonna show you in just a moment,
+
+the gory details of how this works
+
+under the hood with SageMaker,
+
+and what are the constraints
+
+for real-time inference endpoint?
+
+Well, the latency, the
+performance of the model
+
+has to return a prediction
+within 60 seconds.
+
+If it doesn't return a
+prediction within 60 seconds,
+
+we get an error and
+the input, the payload,
+
+we call this the payload, it's
+also the input to the model
+
+has to be less than six megabytes.
+
+So two constraints on
+our real-time endpoint.
+
+And before we go on for
+real-time inference,
+
+let's talk about a couple
+of terminology pieces.
+
+Let's level set there.
+
+So again, we're focusing
+on the inference side.
+
+So if we want to have model predictions,
+
+we have to have a model.
+
+So we have a trained model.
+
+This could be a model that
+you trained with SageMaker.
+
+This could be a model that
+you downloaded from GitHub.
+
+This could be a model
+
+that you trained on-prem on your laptop.
+
+It doesn't matter what type of model it is
+
+or where it came from.
+
+As long as we can containerize it,
+
+we can use SageMaker for inference.
+
+So the first thing is a model.
+
+Now, once we tie some compute
+resources to the model
+
+that becomes a production variant, right?
+
+So when we say I have a
+fraud prediction model,
+
+and I want to support it
+
+with an M5 extra large instance type,
+
+now we have a production variant.
+
+And endpoint configurations,
+
+this is sort of hierarchical
+
+where the model becomes
+a production variant,
+
+multiple production variants
+
+become endpoint configuration, right?
+
+So we can have multiple
+production variants.
+
+And then ultimately, when
+the model is deployed,
+
+we have a single endpoint
+that's fully managed,
+
+and we have a restful interface
+to interact with that.
+
+And here in this example,
+
+and we have a single SageMaker endpoint.
+
+We're invoking that endpoint
+with a HDTP post request,
+
+and we have three production endpoints,
+
+production variants
+that are supporting it.
+
+Production variant one, it's model one.
+
+It's deployed to an instance that's an M5,
+
+two extra large single instance type.
+
+And 70% of the traffic goes to this model.
+
+So this is a random waiting.
+
+70% of the traffic that
+comes into this endpoint
+
+is gonna go to that model.
+
+We control these weights, right?
+
+So we can have multiple models
+
+supported behind the endpoint.
+
+Here we have two other
+production variants.
+
+We have one that has two instances,
+
+20% of the probability
+of the inference request
+
+go to this variant two, and then finally,
+
+10% go to variant three, right?
+
+So this is an example of
+production variants supporting
+
+a single endpoint.
+
+And you might think, Aaron,
+
+why do I care about production variants?
+
+Well, come back to that flywheel.
+
+As we go through it one
+time, we have variant one.
+
+As we have through it
+again, we have variant two.
+
+Perhaps we're not ready to switch
+
+a blue green deployment to say,
+
+we're gonna take all of
+the traffic from model A
+
+and switch it to model B or version two.
+
+So that's a common architecture
+
+where we might slowly
+introduce the new model,
+
+using these weighted weights
+for the SageMaker endpoint.
+
+And then we can also change
+these weights over time, right?
+
+So we can slowly ramp up the new model
+
+to where we want to have now
+90% of the traffic coming
+
+to the new variant.
+
+So lots of options there.
+
+Let's deep dive on what happens
+
+when we do deploy a model with
+SageMaker, real-time model.
+
+Okay, so with SageMaker,
+
+there's a number of ways to
+interact with the service.
+
+We don't have to use SageMaker Studio IDE,
+
+that's one option that we have.
+
+If we're more comfortable
+using, let's say Java or Ruby,
+
+we can interact with the APIs
+that way through the AWS SDKs.
+
+Maybe we're more comfortable
+from the command line.
+
+Like we wanna use the AWS command line.
+
+We can interact with the
+SageMaker APIs that way as well.
+
+We also have a SageMaker Python, SDK,
+
+and think of this as a high level library
+
+that's really providing
+convenience functions for training,
+
+deploying and monitoring your models.
+
+We can use that as well.
+
+So in this example,
+
+I'm using that SageMaker
+Python, SDK library.
+
+I'm gonna deploy a model using
+this convenience function
+
+where I take the trained model estimator,
+
+and I do a dot deploy.
+
+And as part of that,
+
+I also have to provide my configuration.
+
+So here,
+
+I'm gonna say,
+
+I'm gonna deploy this model
+to an M5 large instance,
+
+and I want two of them.
+
+So two computers supporting this endpoint.
+
+What happens under the hood
+when we do that with SageMaker?
+
+So everything in this black box
+here is the managed service,
+
+is the management that I don't have to do.
+
+I have to call dot deploy.
+
+I get a restful endpoint out of it,
+
+real-time endpoint
+that's up 24 hours a day,
+
+seven days a week.
+
+The first thing that
+SageMaker is gonna do,
+
+number one here, is it's gonna go find two
+
+of those instances based
+on my configuration,
+
+M5 large instances.
+
+It's gonna go find those in the region
+
+that I'm operating in.
+
+SageMaker is smart enough, too,
+
+to deploy those in different
+availability zones.
+
+I don't have to tell it to do that.
+
+It's going to do that on its own.
+
+It's gonna start to bring
+those instances online.
+
+It's gonna copy over software to them.
+
+It's gonna copy over the model artifacts.
+
+So again, the model artifacts
+are the train model artifacts.
+
+These could come from
+SageMaker training jobs.
+
+These could come from GitHub repo.
+
+These could come from
+on-prem model training,
+
+as long as we have the
+model artifacts and S3,
+
+we're gonna copy those over
+to those two new instances
+
+that come online.
+
+And then also we're gonna
+copy over the inference code,
+
+the prediction code, how do we
+handle and invoke the model?
+
+So here we're showing that
+as a container registry,
+
+and we have a number of builts-in,
+
+17 different builts-in
+algorithms within SageMaker.
+
+You can use those builts-in algorithms,
+
+or you can bring your own, you
+can bring your own container.
+
+So it's gonna copy over that
+inference container as well.
+
+It's gonna put a load balancer
+
+in front of the two instances,
+
+and then as a user, as a client,
+
+I just interact with that endpoint.
+
+I don't know that it has
+two instances behind it.
+
+I don't know that there's
+auto scaling policies.
+
+I just get to interact with the endpoint
+
+that stays up 24 hours a
+day, seven days a week.
+
+And before we leave this slide,
+
+one of the questions that I
+get from a lot of customers is,
+
+you know, you show this endpoint, Aaron,
+
+you show this single
+endpoint, how do I invoke it?
+
+And we could invoke
+it, HTTPS post request,
+
+invoke it directly.
+
+It's one option.
+
+There's really two other
+popular options though,
+
+that we see.
+
+So we'll see customers put API gateway
+
+in front of the SageMaker endpoint.
+
+Just gives you a little bit more control
+
+over how you design that API.
+
+Additionally, if you wanted a single API
+
+to do multiple functions,
+
+you could do that as
+well with API gateway.
+
+The other common pattern
+that I see is API gateway
+
+with a serverless lambda function
+
+that then invokes the SageMaker endpoint.
+
+You might think, well,
+
+why now you're introducing more services.
+
+Why are we doing this?
+
+Well, perhaps we wanna do a
+little bit of pre-processing
+
+in that lambda function
+before we invoke it.
+
+That's another common pattern
+
+that you might see before
+the inference request.
+
+You have options there.
+
+So it doesn't have to
+be one size fits all.
+
+Okay.
+
+Before we leave real-time inference,
+
+there's a couple more important points.
+
+And I already talked about deployment.
+
+So this is the endpoint configuration,
+
+where we have a new
+model that comes online
+
+and we wanna swap it out.
+
+We can do Bluegreen deployments
+
+and we can adjust those
+production variant weights
+
+where certain probability
+
+of inference requests
+go to model A, B or C.
+
+Everything we've talked
+about so far though,
+
+is a single real-time endpoint
+that's being deployed.
+
+Well, what if I have a model.
+
+Let's use this fraud example again.
+
+Maybe I have a trained model based
+
+on behavior of our customers.
+
+And I have a model for
+every single state, right?
+
+I have a Kentucky model,
+I have a Missouri model,
+
+I have a New York model.
+
+Now I could go and take those
+trained models and deploy them
+
+to 50 different real-time endpoints.
+
+And I could do that.
+
+That's gonna cost me 50 times
+
+what I'm paying for a
+single real-time endpoint.
+
+Perhaps the better pattern would be
+
+to deploy multiple models
+behind the single endpoint.
+
+And we also support what's
+known as multi-model endpoints.
+
+So now we can host multiple models
+
+behind a single real-time endpoint.
+
+And now as part of the request,
+
+now I'm not just giving the request
+
+the input parameters
+that the model expects.
+
+I'm also whoops, go back here.
+
+I'm also specifying as part
+of the code to invoke it.
+
+What is the model that I want?
+
+Give me the Kentucky model,
+
+give me the Missouri model.
+
+And as part of the inference request,
+
+I specify that SageMaker manage.
+
+So it handles it behind the scenes.
+
+It automatically pulls those models,
+
+cashes them dynamically,
+cashing them, handling,
+
+loading new models that
+haven't been used frequently
+
+and removing models that
+haven't been used frequently
+
+from that cash, right?
+
+So lots of power,
+
+lots of cost savings in
+the multi-model endpoint.
+
+So if you're using real-time endpoints,
+
+you're gonna want to think
+about multi-model endpoints
+
+as an option for cost savings.
+
+Okay.
+
+So I talked about the
+constraints earlier, right?
+
+Six megabytes on the payload, 60 seconds.
+
+Well, what if I have payloads
+that are larger than that?
+
+Maybe I have a geospatial
+analysis for object detection.
+
+We're gonna take satellite imagery,
+
+and we're gonna train a
+model for detecting ships
+
+in the satellite images.
+
+Typically, satellite images
+
+are much larger than six megabytes, right?
+
+So now I'm stuck.
+
+I can't use this real-time endpoint.
+
+Well, we just introduced last year.
+
+This was about August of
+2021 asynchronous inference.
+
+So asynchronous inferences,
+
+very similar to a real-time endpoint,
+
+but now the queuing of the
+model is handled by SageMaker.
+
+And now we're not bound by the constraints
+
+that the real-time endpoint had.
+
+We're not bound by the 62nd timeout.
+
+Now we can handle timeouts
+that are up to 15 minutes,
+
+and we can also handle
+payload sizes up to a one gig.
+
+All right.
+
+So it changes the game on
+the models that we support.
+
+And what is the use case
+for something like this?
+
+Again, very large payloads,
+
+very long processing time
+could also imagine a model
+
+that's gonna do
+transformer-based text analysis.
+
+And if you're gonna
+process a whole document
+
+in a single inference,
+
+that might take longer than 60 seconds.
+
+So there you would use
+an asynchronous endpoint.
+
+And there's one other awesome thing
+
+about asynchronous endpoints.
+
+And it's auto-scaling.
+
+We haven't talked in depth
+about auto-scaling yet,
+
+but for each of these endpoints,
+
+we can control on how it scales
+up and scales down to meet
+
+the demand of our customers, right?
+
+So as they use it, we need
+the endpoint to auto scale.
+
+Asynchronous endpoints allow
+us one very cool option
+
+is we can scale this
+endpoint down to zero now.
+
+So back to that cost
+equation, if I'm not using it,
+
+I'm not paying for it,
+
+which is the great thing
+about asynchronous endpoint
+
+that doesn't exist for
+the real-time endpoint,
+
+because our constraints,
+there were up 24 hours a day,
+
+seven days a week.
+
+We can't scale that down to zero.
+
+S, if you have the option to
+use an asynchronous endpoint,
+
+I would configure auto
+scaling down to zero,
+
+but we have to be able to tolerate
+
+those longer latency periods
+
+where we haven't used
+the model for a while,
+
+and we have to bring it back online.
+
+So you'll see a bit longer latency there.
+
+Okay, so we've talked
+about real-time endpoints.
+
+We've talked about asynchronous
+endpoint, you know,
+
+a geospatial example with
+these very large payloads
+
+would be a good example
+or long processing time.
+
+What if I need a machine learning model
+
+to provide predictions,
+
+but I don't need it up 24
+hours a day, seven days a week.
+
+And the example I always think about is,
+
+is one that I've used before in real life,
+
+I had to produce a report for management
+
+and I needed to do this once a month.
+
+And as part of that report,
+
+I had to create some visualizations.
+
+Part of those visualizations came
+
+from a machine learning model.
+
+Do I wanna pay for a real-time endpoint
+
+to be up 24 hours a day,
+seven days a week for a month,
+
+and I'm gonna use it once.
+
+I'm gonna use it once on the
+weekend, I'm gonna pay for it.
+
+During the week, I'm gonna pay for it.
+
+No, I wanna pay for it
+just the period of time
+
+that I'm gonna use it.
+
+And that's where batch transforms.
+
+This is yet another option for
+inference within SageMaker.
+
+Batch transform is
+different than real-time.
+
+It comes online and it
+processes the input data,
+
+runs that through the train model,
+
+saves the model or save
+those predictions back to S3
+
+and then tears down the compute.
+
+Again, it's very similar
+to a real-time endpoint.
+
+We have to specify,
+compute as part of this.
+
+But we only pay for the time
+that we process the data.
+
+We only pay for the time
+that that compute was alive.
+
+This also can be a good use case
+
+if you have very large data sets.
+
+All right.
+
+So maybe you have a terabyte of data
+
+that you need to process
+through your trained model.
+
+You could use a batch
+transform to do that,
+
+and you don't need that
+persistent endpoint.
+
+One other way I like to think about it is,
+
+we have the inputs already,
+
+and we wanna process those
+through the train model, right?
+
+And many times in a real-time endpoint,
+
+we don't have those inputs.
+
+We're waiting for a
+customer to make a purchase
+
+so we can run it through
+the fraud prediction model.
+
+A batch transform is
+when we have a priority,
+
+all of the inputs.
+
+Okay.
+
+And let's show in detail,
+
+just like we did with
+the real-time endpoint,
+
+because SageMaker is a managed service.
+
+How is this different than
+the real-time endpoint,
+
+the batch endpoint?
+
+Again, we have the same options
+here for invoking, right?
+
+So we could use whatever
+we're comfortable with,
+
+command line interface,
+
+a number of different AWS
+SDKs with popular languages.
+
+And I always recommend to customers
+
+like use what you're used to, right?
+
+Don't learn the SageMaker SDK
+
+if you're already used
+to using the AWS CLI.
+
+Use what you're used to,
+
+use what allows you to move fast enough.
+
+Okay, so for batch transform,
+
+recall that last time we used
+the SageMaker Python, SDK,
+
+and I called it dot deploy to create
+
+that real-time endpoint.
+
+Now I'm gonna call it dot transform.
+
+This is the difference
+between a real-time endpoint
+
+and a batch transform.
+
+Still, I have to configure that
+
+with an M5 large instance,
+
+and I'm gonna use two of those.
+
+Again, this is options that you control.
+
+And we'll talk about how to determine
+
+that a little bit later.
+
+What is the instance type?
+
+An M5 large kind of
+general purpose compute,
+
+and we're gonna use two of those.
+
+So what happens outta
+the hood when we do that?
+
+Everything again in the black
+box is the managed service.
+
+All I have to do is call
+the dot transform on this.
+
+First thing, SageMaker is gonna go find
+
+those M5 instances.
+
+It's gonna spin 'em up.
+
+It's gonna put 'em in different
+availability zones again,
+
+just as we saw with
+the real-time endpoint.
+
+But now, instead of copying
+just the model artifacts
+
+from the S3 bucket,
+
+it's also gonna copy over the data
+
+that we want to process, right?
+
+We want to process a lot of data.
+
+That data needs to live in S3 to start.
+
+So we have the model
+
+and the model artifacts
+going to these instances.
+
+We still need the inference
+code or the inference container.
+
+We're gonna process that
+data through the endpoint,
+
+and then we're gonna save the inference.
+
+We're gonna save the predictions
+
+that came out of the train model,
+
+and we're gonna save those to S3.
+
+So now the data that
+we use for predictions
+
+and the predictions,
+
+the input and the output of the
+model are both living in S3.
+
+We also get to control where those live.
+
+Those could be the same bucket.
+
+Those could be different buckets.
+
+We get to control that as
+part of our configuration.
+
+So, a little bit different
+than the real-time endpoint.
+
+We don't have that load balancer.
+
+We don't have the restful interface,
+
+but we can still process large amounts
+
+of data out through that inference output.
+
+Okay.
+
+So, serverless endpoints,
+everything we've talked about
+
+so far, batch transform
+real-time endpoints,
+
+asynchronous endpoints, we
+had to specify the compute.
+
+We had to specify that
+we want an M5 extra large
+
+or a GPU or memory optimized unit.
+
+Maybe I don't know, or maybe I don't care
+
+what is the underlying compute.
+
+And that's where serverless
+inference comes in.
+
+So serverless inference was
+announced at re:Invent 2021.
+
+And it's really the use case
+back to these terminology
+
+for each endpoint, cost
+use case and constraints.
+
+The use case for a serverless endpoint
+
+is not steady state traffic,
+but spiky traffic, right?
+
+So maybe we work on a food delivery app.
+
+And as part of that food delivery app,
+
+we provide personalization
+recommendations, right?
+
+We're using a machine
+learning model to do that.
+
+So we see very spiky workloads, right?
+
+Lunchtime, we see a ton of requests.
+
+Dinner time, we see a lot of requests,
+
+but during the middle of the night,
+
+we don't see hardly any
+recommendations for food to eat.
+
+And that would be a perfect use case
+
+for serverless endpoints.
+
+How do we use serverless endpoints?
+
+Well, first of all, we
+have to have a container,
+
+a container that's gonna
+include our inference code,
+
+just the same like we're
+gonna have a container
+
+when we use the real-time endpoint
+
+and we pulled it from
+the container registry.
+
+Again, this could be a model
+that we trained with SageMaker.
+
+This could be a model that
+we downloaded from GitHub.
+
+This could be a model
+that we trained on-prem.
+
+It doesn't matter where it came from.
+
+We need the model artifacts, right?
+
+So that's the S3 location
+is looking very familiar
+
+to the real-time endpoint that we in.
+
+And we also have to choose a memory size.
+
+So now, instead of saying,
+
+what is the compute
+like M5 large or a GPU.
+
+Now we have to choose a memory size.
+
+And this is really what is the RAM
+
+that's gonna support
+the serverless function.
+
+And we have options now between one gig,
+
+all the way up to six gigs on memory size
+
+to use for your serverless endpoint.
+
+That's all we need.
+
+The auto scaling automatically happens.
+
+The cost is now very different.
+
+So when we talked about
+real-time endpoints,
+
+the cost that we paid for the inference
+
+was as long as the inference was active,
+
+as long as that instance was active,
+
+we were paying for it.
+
+Now with serverless,
+
+we just pay for what we use, right?
+
+If we use it a lot during lunchtime,
+
+we pay for that usage
+down to the millisecond.
+
+Just if you're familiar
+with Lambda functions,
+
+it's very similar.
+
+We pay for that underlying
+compute that we use
+
+and nothing more.
+
+We get logging through CloudWatch,
+
+and we still get to send
+our inference request
+
+to the serverless endpoints,
+
+just like we're used to the end user.
+
+Doesn't know that it's operating
+with a serverless inference
+
+versus a real-time inference.
+
+Again, this is great for spiky workloads
+
+that aren't steady state.
+
+A couple of constraints.
+
+So we talked about the cost
+you pay for what you use.
+
+The use case is spiky workloads.
+
+Let's talk about constraints
+
+for the serverless endpoints.
+
+Right now, we don't support GPUs
+
+for serverless inference, right?
+
+So that would be a constraint.
+
+If you had to have a GPU
+
+to process your data for the prediction
+
+or the inference phase,
+
+that might be a constraint
+
+where you wouldn't use
+the serverless endpoint.
+
+Okay.
+
+So we talked at length
+about real-time endpoints,
+
+batch transform endpoints,
+asynchronous endpoints,
+
+where our payloads are larger,
+and our latency is larger.
+
+We've talked about all
+those four different options
+
+that we have.
+
+We get to select those.
+
+What are the best practices
+on how to get started?
+
+And I like to think about this
+
+as really optimization, right?
+
+For three of the options,
+
+we had to specify the underlying compute.
+
+We had to specify the instance
+type and with SageMaker,
+
+we have over 70 different
+instances that you can use.
+
+To me as a user, that's mind blowing.
+
+How do I pick out of these 70 right now?
+
+M5, I got GPUs, I got memory optimized,
+
+I get network optimized.
+
+And the last thing that I
+wanna do as a user of SageMaker
+
+is to leave compute on the
+table and not use at all.
+
+Right?
+
+So we wanna maximize the utilization
+
+of the compute that we use.
+
+That's the first tip that we have.
+
+And you might say, well, like,
+
+how am I gonna pick this in
+a bunch of trial and error?
+
+Well, we now have inference recommender,
+
+it's a new offering where
+you provide the model.
+
+You tell it what type of model it is.
+
+This is a computer version
+model for object detection.
+
+And we want latency below X.
+
+We allow inference recommender
+to load test that model.
+
+And it provides us recommendation,
+
+not only for the endpoint
+configuration, the instance type,
+
+how many instances.
+
+It gives us all that information.
+
+So we can use that to
+help select the instance
+
+that we want to use, or if
+we don't wanna select at all,
+
+let's use those serverless endpoints,
+
+or we just specify the memory.
+
+If we're using real-time endpoints,
+
+don't forget to delete your
+endpoints that you aren't using
+
+because you are charged
+as they are active, right?
+
+So if it's a Friday and you're testing,
+
+don't forget to delete that endpoint
+
+before you're done for the day.
+
+And if you're able to host multiple models
+
+under a single endpoint, that's again,
+
+another cost reduction that you can do.
+
+And then the last thing on this
+slide for cost optimization
+
+is we have another service
+called SageMaker Neo.
+
+And SageMaker Neo is really for optimizing
+
+our trained machine learning models.
+
+A lot of times customers
+
+will use this for edge-based deployments.
+
+I wanna deploy my model to Invidia Jetson.
+
+I wanna deploy my model
+to a Raspberry Pie,
+
+but maybe my model's too big.
+
+I can use SageMaker Neo
+to compress that model
+
+to optimize the model,
+
+but it doesn't have to
+be just for edge devices.
+
+Right.
+
+I can also use it for
+cloud-based deployments.
+
+Maybe I wanna improve
+the latency of the model.
+
+I could reduce it with
+SageMaker Neo, right?
+
+So that's another option
+that we have as well
+
+to compress the model size,
+improve the performance.
+
+And then the last thing
+is SageMaker usage plan.
+
+So if you know that you're
+gonna have workloads over,
+
+you know, committed workloads
+over one year to three year,
+
+we have SageMaker usage
+plans, savings plans,
+
+and this can provide up to 60% savings
+
+within Amazon SageMaker usage.
+
+This is for training.
+
+This is for building
+processing jobs, training jobs,
+
+and deployment jobs.
+
+Okay.
+
+So, we've talked about a lot
+
+and I want to think about
+how would I get started?
+
+Not necessarily how would I get started
+
+with machine learning.
+
+We'll talk about that in just a moment,
+
+but how do I get started with picking
+
+what style's right for me.
+
+That's what we came here
+to talk about, inference,
+
+what style's right for me.
+
+And I always come back to the use case.
+
+How's your customers gonna
+interact with the model?
+
+Is this a spiky workload?
+
+Is this an intermittent workload?
+
+Is this a real-time use case
+and also requirements, right?
+
+What's the latency
+requirement for your model?
+
+And I talked to customers all
+the time and they say, Aaron,
+
+I have no idea what the
+latency is for my model.
+
+I have no idea what the
+requirement for the latency is.
+
+My recommendation is to pick
+something and to write it down.
+
+These requirements are not static, right?
+
+We're gonna revisit 'em and say,
+
+actually our latency was not one second.
+
+It was actually a hundred milliseconds.
+
+And actually it wasn't
+a hundred milliseconds.
+
+It was 90 milliseconds.
+
+We're gonna refine these
+requirements over time,
+
+but pick something and write it down.
+
+So that's important for
+defining requirements.
+
+And then the last thing,
+
+and one of the most important things
+
+that we'll talk today comes
+back to that flywheel,
+
+where we close the loop
+on deploying a model
+
+and monitoring it.
+
+And we're gonna go through
+that again for version two.
+
+Before we start deploying
+machine learning models
+
+for production, we've gotta
+think about our strategy
+
+for closing that loop with the flywheel.
+
+What is our strategy?
+
+And this comes back
+
+to the machine learning ops topic as well
+
+for retraining our model
+and redeploying it.
+
+So, suppose the pandemic
+does happen, right?
+
+And we have data drift and
+we need to retrain our model.
+
+That can't be a manual process
+that we're thinking about
+
+only when it comes time
+to retrain the model.
+
+We need to think about that ahead of time
+
+and have a strategy and a plan
+
+for not only alerting
+the engineering team,
+
+but also retraining and
+redeploying that model.
+
+So, think about that before
+you put it in production.
+
+So we dove deep on SageMaker inference.
+
+Again, the prediction
+phase of machine learning.
+
+There might be some in the
+crowd that say, you know,
+
+I'm not even there yet.
+
+I'm still coming up to
+speed on machine learning.
+
+And how do I get started with that?
+
+Well, there's a number
+of ways to get started.
+
+It's really, we're drowning in content
+
+for machine learning
+on how to get started.
+
+We have skill builders, which is 500,
+
+over 500 free courses, right?
+
+You can take a look at that QR code.
+
+We also have certifications
+that we support,
+
+and this could be the SA associate.
+
+We have specialty certifications
+for machine learning.
+
+One thing that's not listed
+on here that I would recommend
+
+as well is Machine Learning University.
+
+So this is a new offering from AWS.
+
+It's free on YouTube.
+
+So if you're interested
+
+in getting up to speed on data
+science and machine learning,
+
+there's courses on tabular, data problems,
+
+natural language
+processing, computer vision,
+
+and it's based on the same
+courses that we teach internally
+
+to our engineers and solutions
+architect within AWS.
+
+So Machine Learning University on YouTube.
+
+So with that, I wanna thank
+you for your time today.
+
+Again, I'm Aaron Sengstacken
+
+and you can always get ahold
+of me at awsaaron@amazon.com.
+
+Feel free to reach out anytime.
+
+I might not be able to
+answer your question,
+
+but I can find the right person to help.
+
+So I wanna thank you.
+
+And then most importantly,
+
+if you could please take
+the survey from this,
+
+we want to hear from you.
+
+If you like this talk,
+we wanna hear about that.
+
+If you hated this talk,
+
+we wanna hear about that as well.
+
+So this is the only way
+that we can get better.
+
+So I will hang out for about 10 minutes
+
+and answer any questions
+that the crowd might have.
+
+And then I'll also be out in the hallway
+
+if anybody wants to
+talk afterwards as well.
+
+So again, thank you very much.
+
+(audience applauding)
+
+Any questions?
+
+Questions?
+
+There's one back here.
+
+- [Attendee] Hi, for the batch transform,
+
+you mentioned that the
+data has to be in the S3.
+
+So what if your production
+data is in, say Redshift?
+
+How do you use that data
+for your batch transform?
+
+- Yeah, so his question
+was for batch transform,
+
+I mentioned that the data has to be in S3.
+
+We're gonna process a bunch of data.
+
+What if your data was in Redshift?
+
+We actually have other options
+
+for using your model within Redshift,
+
+where we could call the model
+from a Redshift function.
+
+So batch transform for that
+example might not be appropriate
+
+and there might be other
+options that you might pursue.
+
+But yeah, to use a batch
+batch transform endpoint,
+
+where we're gonna bring it online
+
+with the train model artifacts.
+
+That would be, we need
+our data to be an S3.
+
+- [Attendee] So if you wanna dump,
+
+is there a way to like dump the data
+
+out of Redshift into S3?
+
+Or would you do something else?
+
+- You could take a snapshot of the data
+
+from Redshift and process it, absolutely.
+
+There's a number of different
+intermediate options
+
+that you could do to process
+large amounts of data
+
+through the endpoint.
+
+But it also, like I mentioned,
+
+there's ways to interact
+with the train model
+
+from Redshift as well.
+
+Redshift ML is what I would
+recommend you to take a look at.
+
+Other questions.
+
+- [Attendee] Yes.
+
+I have many questions in one.
+
+So I wanna find out basic
+
+how extensive this application can be.
+
+Meaning, I'll give you
+a couple of example.
+
+Let's say you wanna
+monitor all sorts of data
+
+and you said the data has to be in S3.
+
+Can it go outside and collect
+all the other types of data,
+
+satellite communication from
+all different direction?
+
+Let's say weather patterns,
+weather temperature,
+
+water temperature, anything
+is like that, right?
+
+To predict and do multiple
+predicting on food chain,
+
+a food growth phish movements
+
+depending on these predictions.
+
+Another one can be IT security, right?
+
+Going to the logs of multiple
+devices, collect the data,
+
+do predictions on what's being had,
+
+when it's been had from
+different companies,
+
+read multiple emails of
+who's clicking on phishing
+
+and things like that to do a prediction
+
+on which companies with the
+time they're gonna be, you know,
+
+their data is gonna be accessed or hacked
+
+or things like that.
+
+- Yeah.
+
+- [Attendee] Read a software on that.
+
+So, and if it doesn't handle
+all that, who do we talk?
+
+And what's the AWS or Amazon
+contacts to create something
+
+or collaborate with Amazon?
+
+- Yeah.
+
+So his question was about models
+
+that incorporate data from
+all different sources.
+
+This could be a satellite imagery problem,
+
+a cybersecurity problem.
+
+My comment earlier about your data needs
+
+to live in S3 only applies to
+the backs transform, right?
+
+So if you have a trained model
+
+that you've developed for cybersecurity,
+
+and you deploy that to
+a real-time endpoint,
+
+your data never needs to be
+an S3 in the inference phase.
+
+You're gonna interact with that
+data through the restful API
+
+or the restful interface
+of the real-time endpoint.
+
+Your question though was also
+
+about how do we train a model like that?
+
+SageMaker is a platform
+that would allow you
+
+to train a model like that,
+but it won't do it for you.
+
+So it's a managed service
+in the sense that it's gonna
+
+manage the underlying compute,
+
+but it's not gonna train
+and go collect data for you.
+
+That's still the job of the
+data scientist to go collect
+
+that data, select the
+right algorithm to use,
+
+train that model, evaluate that model.
+
+This is merely a platform and a tool set
+
+that will help you do that
+more efficiently, right?
+
+So these are not fully pre-trained models.
+
+And if you're interested in that type
+
+of pre-train models, maybe
+for computer vision or NLP,
+
+I'd recommend that you take a look
+
+at what are termed the AI services.
+
+So that's gonna be Amazon
+Rekognition, Amazon Comprehend,
+
+Amazon Transcribe, Amazon Forecast.
+
+There's a number of these
+different pre-train models
+
+that you can interact with.
+
+- [Attendee] So will this work
+
+with all these other tools in there?
+
+There is many tools where
+you can get the data
+
+and create you prediction,
+models, and software,
+
+and you can deploy the
+software into a machine
+
+based on the prediction, and it'll read
+
+the inputs that you have trained,
+
+and it'll give you an outcome for example.
+
+- Yep.
+
+Absolutely.
+
+So again, this is a platform
+
+that you can use for your deploy,
+
+your trained models to help deploy them.
+
+It will not do that for you though.
+
+You still have to build
+the models yourself.
+
+Thanks for the question.
+
+- [Attendee] Is there anybody, I mean,
+
+I can get your contacts later on,
+
+but is there anybody else
+had a weekend, like, hey,
+
+this company wants to develop this further
+
+or wants to add some
+more features to this?
+
+- Yeah.
+
+So we have a number of partners
+
+that you might be able to work with,
+
+AWS partners or AWS professional services,
+
+if you want them to do
+it end-to-end for you.
+
+But again, this platform of
+SageMaker is a managed platform,
+
+but it still allows
+you as a data scientist
+
+to approach any problem
+type, tabular problems,
+
+computer vision problems,
+natural language,
+
+pro-forecasting problems,
+clustering problems.
+
+It doesn't matter the problem type.
+
+It's the platform for data science on AWS.
+
+We can talk after in the hallway,
+
+if you have some follow ups.
+
+Next question.
+
+There's one up front.
+
+- [Attendee] Thank you.
+
+So if your model needs to
+use GPU for the inference,
+
+like what would be the most
+cost-efficient method to that?
+
+- Yeah.
+
+So his question was,
+
+if your model needs to
+use a GPU for inference,
+
+what would be the most cost effective?
+
+Well, we know serverless is out, right
+
+because we don't support GPUs.
+
+Then I would come back
+to use cases, right?
+
+Do you have the data that you already,
+
+the input data to the model, if you do,
+
+and you just need to process
+it through the train model,
+
+then I would use batch transforms.
+
+I can select a GPU instance type.
+
+So in the example, I showed M5 instance,
+
+that's a CPU-based instance.
+
+It doesn't include a GPU.
+
+But we can use a number
+of other instance types
+
+that have GPUs, have a
+cluster of GPUs for inference.
+
+We could use that with batch transform
+
+a synchronous inference
+or real-time inference.
+
+From a cost perspective,
+
+I would suggest that you look
+
+at either batch transform
+or asynchronous inference,
+
+because that real-time
+endpoint's gonna stay up
+
+and you pay for it when it's up.
+
+So, I would start there
+and then progress down.
+
+- [Attendee] And for the asynchronous
+
+and the batch transform, is it,
+
+the cost is pay as you use or...
+
+- Asynchronous and batch transform.
+
+The cost is how long it
+takes to process the data.
+
+So asynchronous, if we don't
+have auto-scaling down to zero,
+
+we pay for it just like
+a real-time endpoint.
+
+If we have auto-scaling down to zero,
+
+as soon as it goes down to
+zero, we don't pay for anything.
+
+So we only pay when
+that endpoint is active.
+
+For batch transform, we
+pay for the amount of time
+
+that the instance is active
+to process the data through.
+
+- [Attendee] Thank you.
+
+- We have a question back here.
+
+- [Attendee] So I was curious.
+
+If there's any SageMaker related offerings
+
+for monitoring specifically,
+like for instance,
+
+modeling model drift,
+
+you can imagine you have your inputs
+
+and you know what you're
+expecting to get out
+
+and can you model how or monitor at least
+
+how that's going to alert you
+
+when you need to change something?
+
+- Yeah.
+
+So his question,
+
+are there any SageMaker
+tools that we can use
+
+to help monitor the models
+that are in production?
+
+We focused on deploying
+models to production here,
+
+but how do we monitor 'em?
+
+Yes, absolutely.
+
+SageMaker Model Monitor.
+
+So model monitor is a processing job
+
+that runs on crone based schedule, right?
+
+So you can say, I wanna
+monitor for drift every hour,
+
+every day, every week, every 36 hours,
+
+where we're gonna take a look
+at the baseline statistics,
+
+the statistical distribution
+of that input data
+
+that we train the model on.
+
+And we're gonna compare that to the data
+
+that's coming in the model.
+
+Is it different?
+
+We get to control when
+we get alerted, right?
+
+So it's not just data and concept drift.
+
+We could also look for post-training bias.
+
+We could also look for schema changes.
+
+So maybe I train the model
+
+and I'm expecting RGB image to come in.
+
+And now I see black and
+white images, right?
+
+So now the tensor of
+the model that's going,
+
+or the image that's coming in
+now only has a single channel.
+
+It's great scale image, right?
+
+We could alert on that because
+now the schema has changed.
+
+The constraints have changed.
+
+We can also alert on
+completeness of the data.
+
+Maybe we get an inference request
+
+that's missing 50% of the parameters.
+
+And we want to alert on that.
+
+We can control those alerts.
+
+And we use CloudWatch
+for our alerting function
+
+within model monitoring.
+
+So we can alert the
+engineering team automatically,
+
+but expect if you're using model monitor.
+
+So I gave a re:Invent talk
+about model monitoring
+
+that you're gonna have to
+adjust these thresholds, right?
+
+This is not a set it and forget it.
+
+We high five, we go home
+because the last thing
+
+that we want to have happen is like,
+
+we set it and forget it.
+
+And the whole engineering team gets used
+
+to the alarm going off.
+
+We ignore it.
+
+Well, why do we monitor it
+in the first plate, right.
+
+We don't want the alert,
+fatigue to take place.
+
+So expect to revisit that.
+
+And you know, if I was
+managing an engineering team
+
+that we're monitoring
+models in production,
+
+this would be something
+that we'd look at weekly.
+
+Right?
+
+What are the limits?
+
+What are the alerts that we're seeing?
+
+Do we need to change those or update 'em?
+
+So a good question.
+
+Any other questions?
+
+All right.
+
+If there are no more
+questions, thank you again.
+
+Again, I'm Aaron Sengstacken.
+
+I'll be out in the hallway
+if you want to talk,
+
+but thanks for coming.
+
+Thanks for coming to the DC summit.
+
+- [Moderator] Thank you.
+
+(audience applauding)
+

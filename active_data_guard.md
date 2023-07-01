@@ -1,5 +1,6 @@
-###oracle adg
-####存储镜像复制
+### oracle adg
+#### 存储镜像复制
+
 * 块断裂 
 断电发生，写断裂，导致数据库无法启动 
 因为存储采用到镜像复制，两边数据都是损毁状态，切换到备库，依然无法成功。
@@ -31,7 +32,7 @@ before;
 
 Standby Redo log (Real time apply)
 主库每次写的时候，备库的StandByRedo也会被写；
- 
+
 Recover through resetLogs;(新开一个归档编号）
 基于时间点的恢复；
 
@@ -78,11 +79,10 @@ Data Guard DataBase Nologging (force logging)
  所有Rac节点并行恢复
 DML 重定向；
  将写请求路由到主库；
- 
+
  
 
 
 
 主库、备库、延时库；
-
 
